@@ -4,6 +4,31 @@ if (typeof window.livewire === 'undefined') {
     throw 'Livewire Sortable Plugin: window.livewire is undefined. Make sure @livewireScripts is placed above this script include'
 }
 
+
+window.livewire.directive('sortable-parent-group', (el, directive, component) => {
+    // Only fire this handler on the "root" directive.
+    if (directive.modifiers.length > 0) return
+
+    let options = { draggable: '[wire\\:sortable\\.parent-group-item]' }
+
+    if (el.querySelector('[wire\\:sortable\\.parent-group-handle]')) {
+        options.handle ='[wire\\:sortable\\.parent-group-handle]'
+    }
+
+    const sortable = new Sortable(el, options);
+
+    sortable.on('sortable:stop', () => {
+        setTimeout(() => {
+            let items = []
+
+            el.querySelectorAll('[wire\\:sortable\\.parent-group-item]').forEach((el, index) => {
+                items.push({ order: index + 1, value: el.getAttribute('wire:sortable.parent-group-item')})
+            })
+            component.call(directive.method, items)
+        }, 1)
+    })
+})
+
 window.livewire.directive('sortable-group', (el, directive, component) => {
     if (directive.modifiers.includes('item-group')) {
         // This will take care of new items added from Livewire during runtime.
@@ -67,3 +92,4 @@ window.livewire.directive('sortable', (el, directive, component) => {
         }, 1)
     })
 })
+
